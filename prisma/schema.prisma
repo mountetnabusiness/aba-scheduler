@@ -1,0 +1,52 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Employee {
+  id           String         @id @default(uuid())
+  name         String
+  role         Role
+  availability Availability[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model Client {
+  id             String         @id @default(uuid())
+  name           String
+  requiredRole   Role
+  availability   Availability[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model Availability {
+  id         String   @id @default(uuid())
+  day        Weekday
+  startTime  String
+  endTime    String
+  employee   Employee? @relation(fields: [employeeId], references: [id])
+  employeeId String?
+  client     Client?   @relation(fields: [clientId], references: [id])
+  clientId   String?
+}
+
+enum Role {
+  DIRECT_THERAPIST
+  RBA
+}
+
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
