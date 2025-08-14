@@ -1,0 +1,52 @@
+name: Build & Deploy (standalone)
+
+on:
+  push:
+    branches: [ main ]
+
+# If you push twice quickly, cancel the older run
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build (standalone)
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: npm run build -- --no-lint
+
+      - name: Pack artifact
+        run: |
+          tar czf artifact.tgz \
+            .next/standalone \
+            .next/static \
+            public
+
+      # --- SSH to your server (uses repo secrets you add below) ---
+      - name: Setup SSH
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_ed25519
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Upload artifact to server
+        run: scp -i ~/.ssh/id_ed25519 artifact.tgz ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/tmp/artifact.tgz
+
+      - name: Run deploy script on server
+        run: ssh -i ~/.ssh/id_ed25519 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'bash /root/aba-scheduler/deploy_artifact.sh'
