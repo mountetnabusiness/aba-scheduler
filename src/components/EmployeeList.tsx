@@ -22,7 +22,7 @@ export function EmployeeList() {
       try {
         const data = JSON.parse(text)
         setEmployees(data.employees || [])
-      } catch (err) {
+      } catch (_err) {
         console.error("❌ Failed to parse JSON:", text)
       }
 

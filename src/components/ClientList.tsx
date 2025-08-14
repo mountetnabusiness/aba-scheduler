@@ -22,7 +22,7 @@ export function ClientList() {
       try {
         const data = JSON.parse(text)
         setClients(data.clients || [])
-      } catch (err) {
+      } catch (_err) {
         console.error("❌ Failed to parse JSON:", text)
       }
 
