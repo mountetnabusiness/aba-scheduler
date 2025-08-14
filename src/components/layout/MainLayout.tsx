@@ -1,8 +1,8 @@
 'use client'
 
-import { ReactNode } from "react"
-import { Sidebar } from "./sidebar"
-import { Header } from "./header"
+import { ReactNode } from 'react'
+import Sidebar from './Sidebar'
+import Header from './Header'
 
 export default function MainLayout({ children }: { children: ReactNode }) {
   return (
