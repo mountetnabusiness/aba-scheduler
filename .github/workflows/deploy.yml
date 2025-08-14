@@ -4,7 +4,6 @@ on:
   push:
     branches: [ main ]
 
-# If you push twice quickly, cancel the older run
 concurrency:
   group: deploy-main
   cancel-in-progress: true
@@ -15,10 +14,8 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -38,7 +35,6 @@ jobs:
             .next/static \
             public
 
-      # --- SSH to your server (uses repo secrets you add below) ---
       - name: Setup SSH
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_ed25519
