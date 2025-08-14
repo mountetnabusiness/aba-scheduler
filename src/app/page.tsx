@@ -1,11 +1,7 @@
-import type { NextConfig } from 'next';
+// src/app/page.tsx
+import { redirect } from 'next/navigation';
 
-const nextConfig: NextConfig = {
-  async redirects() {
-    return [
-      { source: '/', destination: '/clients/list', permanent: false },
-    ];
-  },
-};
-
-export default nextConfig;
+export default function Home() {
+  redirect('/clients/list'); // or '/clients'
+  return null; // unreachable, but keeps TS happy
+}
