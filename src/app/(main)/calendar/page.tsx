@@ -8,33 +8,48 @@ import type { EventDropArg } from '@fullcalendar/core'
 import type { EventResizeDoneArg } from '@fullcalendar/interaction'
 import { mockCalendar } from '@/lib/mockCalendar'
 
+// Flexible event shape (drop/resize can yield undefined start/end)
+type CalEvent = {
+  id: string
+  title: string
+  start?: string
+  end?: string
+  extendedProps?: {
+    client: string
+    staff: string
+    location: string
+  }
+}
+
 export default function CalendarPage() {
-  const [events, setEvents] = useState(mockCalendar)
+  const [events, setEvents] = useState<CalEvent[]>(mockCalendar as CalEvent[])
 
   const handleEventDrop = (info: EventDropArg) => {
-    const updatedEvents = events.map(event =>
-      event.id === info.event.id
-        ? {
-            ...event,
-            start: info.event.start?.toISOString(),
-            end: info.event.end?.toISOString(),
-          }
-        : event
+    setEvents(prev =>
+      prev.map(ev =>
+        ev.id === info.event.id
+          ? {
+              ...ev,
+              start: info.event.start ? info.event.start.toISOString() : ev.start,
+              end: info.event.end ? info.event.end.toISOString() : ev.end,
+            }
+          : ev
+      )
     )
-    setEvents(updatedEvents)
   }
 
   const handleEventResize = (info: EventResizeDoneArg) => {
-    const updatedEvents = events.map(event =>
-      event.id === info.event.id
-        ? {
-            ...event,
-            start: info.event.start?.toISOString(),
-            end: info.event.end?.toISOString(),
-          }
-        : event
+    setEvents(prev =>
+      prev.map(ev =>
+        ev.id === info.event.id
+          ? {
+              ...ev,
+              start: info.event.start ? info.event.start.toISOString() : ev.start,
+              end: info.event.end ? info.event.end.toISOString() : ev.end,
+            }
+          : ev
+      )
     )
-    setEvents(updatedEvents)
   }
 
   return (
@@ -42,8 +57,8 @@ export default function CalendarPage() {
       <FullCalendar
         plugins={[timeGridPlugin, interactionPlugin]}
         initialView="timeGridWeek"
-        editable={true}
-        selectable={true}
+        editable
+        selectable
         allDaySlot={false}
         height="auto"
         slotMinTime="08:00:00"
@@ -52,7 +67,7 @@ export default function CalendarPage() {
         eventDrop={handleEventDrop}
         eventResize={handleEventResize}
         eventClick={(info) => {
-          alert(`Session: ${info.event.title}\nLocation: ${info.event.extendedProps.location}`)
+          alert(`Session: ${info.event.title}\nLocation: ${info.event.extendedProps?.location ?? 'N/A'}`)
         }}
       />
     </div>
