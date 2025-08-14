@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin, { EventDropArg, EventResizeDoneArg } from '@fullcalendar/interaction'
+import interactionPlugin from '@fullcalendar/interaction'
+import type { EventDropArg, EventResizeDoneArg } from '@fullcalendar/core'
 import { mockCalendar } from '@/lib/mockCalendar'
 
 export default function CalendarPage() {
