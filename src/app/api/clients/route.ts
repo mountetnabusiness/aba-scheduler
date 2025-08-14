@@ -1,46 +1,35 @@
-// src/app/api/clients/route.ts
+import { prisma, Role } from '@prisma/client'
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
-
-type AvailabilitySlot = {
-  day: string
-  startTime: string
-  endTime: string
-}
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json()
+    const { name, requiredRole, availability } = await req.json()
 
-    // Expect: { name: string, requiredRole?: string, availability?: AvailabilitySlot[] }
-    const name: string = body?.name
-    const requiredRole: string = body?.requiredRole ?? 'RBT' // <-- ensure it's present
-    const availability: AvailabilitySlot[] = Array.isArray(body?.availability) ? body.availability : []
-
-    if (!name) {
-      return NextResponse.json({ error: 'name is required' }, { status: 400 })
+    // Validate that the provided role is a valid Prisma Role enum value
+    if (!Object.values(Role).includes(requiredRole)) {
+      return NextResponse.json(
+        { error: `Invalid role. Must be one of: ${Object.values(Role).join(', ')}` },
+        { status: 400 }
+      )
     }
 
     const client = await prisma.client.create({
       data: {
         name,
-        requiredRole, // <-- REQUIRED by your Prisma schema
+        requiredRole, // This is now correctly typed as Role enum
         availability: {
-          create: availability.map((slot) => ({
+          create: availability.map((slot: { day: string; startTime: string; endTime: string }) => ({
             day: slot.day,
             startTime: slot.startTime,
-            endTime: slot.endTime,
-          })),
-        },
-      },
-      include: { availability: true },
+            endTime: slot.endTime
+          }))
+        }
+      }
     })
 
-    return NextResponse.json(client, { status: 201 })
-  } catch (err: any) {
-    console.error('Create client error:', err)
-    return NextResponse.json({ error: 'Failed to create client' }, { status: 500 })
+    return NextResponse.json(client)
+  } catch (error) {
+    console.error(error)
+    return NextResponse.json({ error: 'Error creating client' }, { status: 500 })
   }
 }
